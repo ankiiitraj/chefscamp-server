@@ -4,13 +4,19 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 require __DIR__ . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+// $dotenv->load();
 $app = AppFactory::create();
 
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
+
+$app->get('/', function($request, $response, $args){
+    $response->getBody()->write("Hi");
+    return $response
+      ->withHeader('Content-Type', 'application/json');
+});
 
 $app->get('/api/auth/', function ($request, $response, $args) {
     if(isset($_GET['code'])){
@@ -19,7 +25,6 @@ $app->get('/api/auth/', function ($request, $response, $args) {
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
-    
 });
 
 $app->get('/api/contests/{userName}', function ($request, $response, $args) {
@@ -279,8 +284,8 @@ function get_config(){
     'api_endpoint'=> 'https://api.codechef.com/',
     'authorization_code_endpoint'=> 'https://api.codechef.com/oauth/authorize',
     'access_token_endpoint'=> 'https://api.codechef.com/oauth/token',
-    'redirect_uri'=> '$_ENV["REDIRECT_URL"]',
-    'website_base_url' => '$_ENV["BASE_URL"]');
+    'redirect_uri'=> $_ENV["REDIRECT_URI"],
+    'website_base_url' => $_ENV["BASE_URL"]);
 
     return $config;
 }
