@@ -274,13 +274,13 @@ function make_curl_request($url, $post, $headers = array()){
 
 // Return config details whereever required
 function get_config(){
-    $config = array('client_id'=> '5ba32168f9c8b99f1703166f01e6d736',
-    'client_secret' => '64a8bab722fa45cc716f68451cf27f74',
+    $config = array('client_id'=> $_ENV["CLIENT_ID"],
+    'client_secret' => $_ENV["CLIENT_SECRET"],
     'api_endpoint'=> 'https://api.codechef.com/',
     'authorization_code_endpoint'=> 'https://api.codechef.com/oauth/authorize',
     'access_token_endpoint'=> 'https://api.codechef.com/oauth/token',
-    'redirect_uri'=> 'http://localhost:3000/',
-    'website_base_url' => 'http://localhost:3000/');
+    'redirect_uri'=> '$_ENV["REDIRECT_URL"]',
+    'website_base_url' => '$_ENV["BASE_URL"]');
 
     return $config;
 }
