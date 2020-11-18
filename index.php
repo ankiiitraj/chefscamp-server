@@ -11,9 +11,16 @@ require __DIR__ . '/vendor/autoload.php';
 $app = AppFactory::create();
 $redis = new Predis\Client($_ENV["REDIS_URL"]);
 
+
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
+
+require "./src/routes/tags.php";
+require "./src/routes/ide.php";
+require "./src/routes/problem.php";
+require "./src/routes/contest.php";
+require "./src/routes/leaderboard.php";
 
 $app->get('/', function ($request, $response, $args) {
     $response->getBody()->write("Hi");
@@ -42,110 +49,6 @@ $app->get('/api/auth/', function ($request, $response, $args) {
     }
 });
 
-$app->get('/api/contests/{userName}', function ($request, $response, $args) {
-    $payload = make_contests_list_api_request($args['userName']);
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Cache-Control', 'public, max-age=86400')
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->get('/api/contests/{contestCode}/{userName}', function ($request, $response, $args) {
-    $payload = make_contest_details_api_request($args['userName'], $args['contestCode']);
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Cache-Control', 'public, max-age=604800')
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->get('/api/rankings/{contestCode}/{userName}', function ($request, $response, $args) {
-    $payload = make_contest_ranklist_api_request($args['userName'], $args['contestCode']);
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Cache-Control', 'public, max-age=60')
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->get('/api/contests/{contestCode}/problems/{problemCode}/{userName}', function ($request, $response, $args) {
-    $payload = make_contest_problem_api_request($args['userName'], $args['problemCode'], $args['contestCode']);
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Cache-Control', 'public, max-age=604800')
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->get('/api/submissions/{problemId}/{userName}', function ($request, $response, $args) {
-    $payload = (make_submissions_api_request($args['userName'], $args['problemId']));
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Cache-Control', 'public, max-age=604800')
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->get('/api/ide/status/{link}/{userName}', function ($request, $response, $args) {
-    $payload = (make_ide_status_api_request($args['userName'], $args['link']));
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Content-Type', 'application/json');
-});
-
-$app->post('/api/ide/run/{userName}', function ($request, $response, $args) {
-    $body = $request->getParsedBody();
-    $payload = (make_ide_run_api_request($args['userName'], $body));
-    if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
-        $response->getBody()->write(json_encode($payload));
-        return $response
-            ->withStatus(500)
-            ->withHeader('Content-Type', 'application/json');
-    }
-    $response->getBody()->write(json_encode($payload));
-    return $response
-        ->withStatus(200)
-        ->withHeader('Content-Type', 'application/json');
-});
-
 $app->any('{route:.*}', function ($request, $response, $args) {
     $payload = json_encode(
         array(
@@ -159,11 +62,16 @@ $app->any('{route:.*}', function ($request, $response, $args) {
         ->withHeader('Content-Type', 'application/json');
 });
 
-include "./config.php";
-include "./cURL_functions.php";
-include "./db_functions.php";
-include "./route_functions.php";
-include "./redis_functions.php";
+include "./src/util/config.php";
+include "./src/util/cURL_functions.php";
+include "./src/util/db_functions.php";
+include "./src/util/route_functions.php";
+include "./src/util/redis_functions.php";
+include "./src/controller/tags.controller.php";
+include "./src/controller/ide.controller.php";
+include "./src/controller/problem.controller.php";
+include "./src/controller/contest.controller.php";
+include "./src/controller/leaderboard.controller.php";
 
 //This function is for first time login purpose
 function main($response)
