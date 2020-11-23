@@ -23,7 +23,7 @@ function get_tokens($username){
             return $oauth_details;
         }
         $db_message = update_or_set_user_details_to_db($oauth_details, $username);
-        if(array_key_exists("status", $db_message) && $db_message["status"] != "OK"){
+        if(gettype($db_message) == gettype(array()) && array_key_exists("status", $db_message) && $db_message["status"] != "OK"){
             return $db_message;
         }
         update_tokens($username, $oauth_details['access_token'], $oauth_details['refresh_token']);

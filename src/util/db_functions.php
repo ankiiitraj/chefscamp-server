@@ -2,7 +2,7 @@
 
 // updates or inserts the user username accessToken and refreshToken
 function update_or_set_user_details_to_db($oauth_details, $user_name){
-    include __DIR__."/app/database/dbconnect.php";
+    include __DIR__."/dbconnect.php";
     
     if ($mysqli->connect_error) {
         die("Connection failed: " . $mysqli->connect_error);
@@ -40,7 +40,7 @@ function update_or_set_user_details_to_db($oauth_details, $user_name){
 
 //Returns oauth details saved in db
 function get_oauth_details_from_db($user_name){
-    include __DIR__."/app/database/dbconnect.php";
+    include __DIR__."/dbconnect.php";
     if ($mysqli->connect_error) {
         die("Connection failed: " . $mysqli->connect_error);
         return get_error_arr("DB connection failed");
