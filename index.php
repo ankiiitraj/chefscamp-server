@@ -6,8 +6,10 @@ use Slim\Factory\AppFactory;
 
 require __DIR__ . '/vendor/autoload.php';
 
-// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-// $dotenv->load();
+if (getenv("HTTP_MODE") === 'DEV') {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
 $app = AppFactory::create();
 $redis = new Predis\Client($_ENV["REDIS_URL"]);
 
@@ -31,7 +33,7 @@ $app->get('/', function ($request, $response, $args) {
 
 $app->get('/api/auth/', function ($request, $response, $args) {
     if (isset($_GET['code'])) {
-        $payload = main($response);
+        $payload = main();
         if($payload['status'] != "OK"){
             $response->getBody()->write(json_encode($payload));
             return $response
@@ -74,7 +76,7 @@ include "./src/controller/contest.controller.php";
 include "./src/controller/leaderboard.controller.php";
 
 //This function is for first time login purpose
-function main($response)
+function main()
 {
     $config = get_config();
 
@@ -85,7 +87,7 @@ function main($response)
     );
 
     $oauth_details['authorization_code'] = $_GET['code'];
-    $oauth_details = generate_access_token_first_time($config, $oauth_details, $response);
+    $oauth_details = generate_access_token_first_time($config, $oauth_details);
     if(array_key_exists('status', $oauth_details)){
         return $oauth_details;
     }

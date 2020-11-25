@@ -17,6 +17,7 @@ $app->get('/api/tags', function ($request, $response, $args) {
 });
 
 //Gets private tags
+// Needs Signin
 $app->get('/api/tags/my/{username}', function ($request, $response, $args) {
     $payload = (get_private_tags($args['username']));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
@@ -32,6 +33,7 @@ $app->get('/api/tags/my/{username}', function ($request, $response, $args) {
 });
 
 // Gets problemCode with the tags
+// Do not need to be looged in
 $app->get('/api/tags/problems/{username}', function ($request, $response, $args) {
     $tags = $request->getQueryParams();
     $payload = get_problems_by_tags($args['username'], $tags['filter'], $tags['offset']);
