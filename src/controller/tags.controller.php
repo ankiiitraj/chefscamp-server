@@ -201,10 +201,49 @@ function get_problems_by_private_tags($username, $tags, $offset){
     }
 }
 
-function get_problems_by_tags($user_name, $filter, $offset){
+function get_problems_by_tags($username, $filter, $offset){
+    if($username != "codechef"){
+        $tags_arr = explode(",", $filter);
+        $private_tags = ""; 
+        $public_tags = [];
+        foreach($tags_arr as $tag){
+            $size = count(explode('@', $tag));
+            if($size == 2 and explode('@', $tag)[1] == "private"){
+                $private_tags .= explode('@', $tag)[0] . ",";
+            }else{
+                array_push($public_tags, $tag);
+            }
+        }
+        if(!empty($private_tags)){
+            $private_tags = rtrim($private_tags, ",");
+            $result = get_problems_by_private_tags($username, $private_tags, $offset);
+            if($result['status'] != "OK"){
+                return $result;
+            }
+            $problem_intersection = ["status" => "OK", "result"=>["data"=>["content"=>[]]]];
+            foreach($result['result']['data']['content'] as $problem){
+                $tags = explode(',', $problem->problemTags);
+                $no_intersection_flag = 0;
+                foreach($public_tags as $tag){
+                    if(!in_array($tag, $tags)){
+                        $no_intersection_flag = 1;
+                        break;
+                    }
+                }
+                if(!$no_intersection_flag){
+                    array_push($problem_intersection['result']['data']['content'], $problem);
+                }
+            }
+            if(count($problem_intersection['result']['data']['content']) == 0){
+                return get_error_arr("No problems found for these tags intersection");
+            }
+            return $problem_intersection;
+        }
+
+    }
     $config = get_config();
     $path = $config['api_endpoint'] . "tags/problems?limit=20&offset=".$offset."&filter=". $filter;
-    $response = (array)json_decode(make_api_request($user_name, $path));
+    $response = (array)json_decode(make_api_request($username, $path));
     return $response;
 }
 
