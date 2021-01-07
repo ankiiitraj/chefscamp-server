@@ -40,6 +40,8 @@ $app->get('/api/auth/', function ($request, $response, $args) {
                 ->withStatus(500)
                 ->withHeader('Content-Type', 'application/json');
             }
+        $token = createToken($args["username"]);
+        setcookie("auth", $token, time() + (60 * 60 * 24 * 365), "/");
         $response->getBody()->write(json_encode($payload));
         return $response
             ->withStatus(200)
@@ -65,6 +67,7 @@ $app->any('{route:.*}', function ($request, $response, $args) {
 });
 
 include "./src/util/config.php";
+include "./src/util/auth.php";
 include "./src/util/cURL_functions.php";
 include "./src/util/db_functions.php";
 include "./src/util/route_functions.php";

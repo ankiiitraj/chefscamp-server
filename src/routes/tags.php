@@ -19,6 +19,12 @@ $app->get('/api/tags', function ($request, $response, $args) {
 //Gets private tags
 // Needs Signin
 $app->get('/api/tags/my/{username}', function ($request, $response, $args) {
+    if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
+        $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-Type', 'application/json');
+    }
     $payload = (get_private_tags($args['username']));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
@@ -52,6 +58,12 @@ $app->get('/api/tags/problems/{username}', function ($request, $response, $args)
 
 // Gets problems with the private tags
 $app->get('/api/tags/problems/my/{username}', function ($request, $response, $args) {
+    if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
+        $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-Type', 'application/json');
+    }
     $tags = $request->getQueryParams();
     $payload = get_problems_by_private_tags($args['username'], $tags['filter'], $tags['offset']);
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
@@ -69,6 +81,12 @@ $app->get('/api/tags/problems/my/{username}', function ($request, $response, $ar
 
 // Create/Add a private tag to a problem
 $app->post('/api/tags/{username}', function ($request, $response, $args) {
+    if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
+        $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-Type', 'application/json');
+    }
     $body = $request->getParsedBody();
     
     $tag = create_private_tag($args['username'], $body['tag']);
@@ -123,6 +141,12 @@ $app->post('/api/tags/{username}', function ($request, $response, $args) {
 
 // Get private tags for a problemCode
 $app->get('/api/tags/{problemCode}/my/{username}', function ($request, $response, $args) {
+    if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
+        $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-Type', 'application/json');
+    }
     $payload = (get_private_tags_for_problem($args['username'], $args['problemCode']));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
