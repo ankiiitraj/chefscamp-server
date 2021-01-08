@@ -1,13 +1,13 @@
 <?php
 
-$app->get('/api/contests/{contestCode}/problems/{problemCode}/{userName}', function ($request, $response, $args) {
-    if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
-        $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
-        return $response
-            ->withStatus(401)
-            ->withHeader('Content-Type', 'application/json');
+$app->get('/api/contests/{contestCode}/problems/{problemCode}', function ($request, $response, $args) {
+    $username = "";
+    if(isset($_COOKIE["auth"]) && is_authorized($_COOKIE["auth"])){
+        $username = getTokenPayload($_COOKIE["auth"]);
+    }else{
+        $username = "codechef";
     }
-    $payload = make_contest_problem_api_request($args['userName'], $args['problemCode'], $args['contestCode']);
+    $payload = make_contest_problem_api_request($username, $args['problemCode'], $args['contestCode']);
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
         return $response
@@ -21,14 +21,15 @@ $app->get('/api/contests/{contestCode}/problems/{problemCode}/{userName}', funct
         ->withHeader('Content-Type', 'application/json');
 });
 
-$app->get('/api/submissions/{problemId}/{userName}', function ($request, $response, $args) {
+$app->get('/api/submissions/{problemId}', function ($request, $response, $args) {
     if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
         $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
         return $response
             ->withStatus(401)
             ->withHeader('Content-Type', 'application/json');
     }
-    $payload = (make_submissions_api_request($args['userName'], $args['problemId']));
+    $username = getTokenPayload($_COOKIE["auth"]);
+    $payload = (make_submissions_api_request($username, $args['problemId']));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
         return $response

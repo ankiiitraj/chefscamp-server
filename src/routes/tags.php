@@ -18,14 +18,15 @@ $app->get('/api/tags', function ($request, $response, $args) {
 
 //Gets private tags
 // Needs Signin
-$app->get('/api/tags/my/{username}', function ($request, $response, $args) {
+$app->get('/api/tags/my', function ($request, $response, $args) {
     if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
         $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
         return $response
             ->withStatus(401)
             ->withHeader('Content-Type', 'application/json');
     }
-    $payload = (get_private_tags($args['username']));
+    $username = getTokenPayload($_COOKIE["auth"]);
+    $payload = (get_private_tags($username));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
         return $response
@@ -65,7 +66,8 @@ $app->get('/api/tags/problems/my/{username}', function ($request, $response, $ar
             ->withHeader('Content-Type', 'application/json');
     }
     $tags = $request->getQueryParams();
-    $payload = get_problems_by_private_tags($args['username'], $tags['filter'], $tags['offset']);
+    $username = getTokenPayload($_COOKIE["auth"]);
+    $payload = get_problems_by_private_tags($username, $tags['filter'], $tags['offset']);
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
         return $response
@@ -80,7 +82,7 @@ $app->get('/api/tags/problems/my/{username}', function ($request, $response, $ar
 });
 
 // Create/Add a private tag to a problem
-$app->post('/api/tags/{username}', function ($request, $response, $args) {
+$app->post('/api/tags', function ($request, $response, $args) {
     if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
         $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
         return $response
@@ -88,13 +90,13 @@ $app->post('/api/tags/{username}', function ($request, $response, $args) {
             ->withHeader('Content-Type', 'application/json');
     }
     $body = $request->getParsedBody();
-    
-    $tag = create_private_tag($args['username'], $body['tag']);
+    $username = getTokenPayload($_COOKIE["auth"]);
+    $tag = create_private_tag($username, $body['tag']);
     if(array_key_exists('status', $tag) && $tag['status'] != "OK"){
         // If tag already exists
         if(array_key_exists('error', $tag) && $tag['error'] == "Tag already exists"){
             $problem = add_tag_to_problem(
-                $args['username'], 
+                $username, 
                 $body['problemCode'], 
                 $body['tag'],
                 $body['successfulSubmissions'], 
@@ -120,7 +122,7 @@ $app->post('/api/tags/{username}', function ($request, $response, $args) {
     
     // If key doesn't exists
     $problem = add_tag_to_problem(
-        $args['username'], 
+        $username, 
         $body['problemCode'], 
         $body['tag'], 
         $body['successfulSubmissions'], 
@@ -140,14 +142,15 @@ $app->post('/api/tags/{username}', function ($request, $response, $args) {
 });
 
 // Get private tags for a problemCode
-$app->get('/api/tags/{problemCode}/my/{username}', function ($request, $response, $args) {
+$app->get('/api/tags/{problemCode}/my', function ($request, $response, $args) {
     if((isset($_COOKIE["auth"]) && !is_authorized($_COOKIE["auth"])) || !isset($_COOKIE["auth"])){
         $response->getBody()->write(json_encode(get_error_arr("not_authorized")));
         return $response
             ->withStatus(401)
             ->withHeader('Content-Type', 'application/json');
     }
-    $payload = (get_private_tags_for_problem($args['username'], $args['problemCode']));
+    $username = getTokenPayload($_COOKIE["auth"]);
+    $payload = (get_private_tags_for_problem($username, $args['problemCode']));
     if(array_key_exists("status", $payload) && $payload["status"] != "OK"){
         $response->getBody()->write(json_encode($payload));
         return $response

@@ -40,7 +40,9 @@ $app->get('/api/auth/', function ($request, $response, $args) {
                 ->withStatus(500)
                 ->withHeader('Content-Type', 'application/json');
             }
-        $token = createToken($args["username"]);
+        $payloadJSON = json_decode(json_encode($payload));
+        $username = $payloadJSON->result->data->content->username;
+        $token = createToken($username);
         setcookie("auth", $token, time() + (60 * 60 * 24 * 365), "/");
         $response->getBody()->write(json_encode($payload));
         return $response

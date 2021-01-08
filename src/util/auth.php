@@ -14,6 +14,13 @@ function is_authorized($jwt){
     }
 }
 
+function getTokenPayload($jwt){
+    $key = $_ENV["JWT_KEY"];
+    $payload = JWT::decode($jwt, $key, array('HS256'));
+    $payload = (array) $payload;
+    return $payload["username"];
+}
+
 function createToken($username){
     $key = $_ENV["JWT_KEY"];
     $payload = [
